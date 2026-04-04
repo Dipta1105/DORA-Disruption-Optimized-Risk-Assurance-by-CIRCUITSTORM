@@ -5,7 +5,6 @@
 ## Q-Commerce Income Protection Platform
 
 ## 1. Introduction
-### Hackathon Edition | Fully Compliant Document
 
 DORA (Disruption-Optimized Risk Assurance) is a next-generation AI-powered parametric micro-insurance platform designed to protect the income of *Quick Commerce* gig delivery workers in real time.
 ---
@@ -15,7 +14,6 @@ Gig workers face unpredictable income disruptions due to:
 - Traffic congestion
 - Civic restrictions such as strikes and curfews
 - Platform-side downtime
-## Document Control
 
 Traditional insurance models fail in this context due to:
 - Manual claims
@@ -1352,9 +1350,151 @@ DORA is a production-ready InsurTech platform that merges parametric insurance, 
 ```
 ---
 
-**Document Version:** 1.1  
-**Last Updated:** April 2026  
+ 
 
 ---
+
+Payout Trigger Conditions (DORA System)
+
+The DORA platform follows a strict, rule-based parametric trigger system to ensure payouts are accurate, fair, and fraud-resistant. A payout is released only when all required conditions are satisfied.
+
+1. Dual-Validation Core Rule
+
+A payout is triggered only if BOTH conditions are met:
+
+1. Verified Disruption Occurs
+
+AND
+
+2. Measurable Income Loss is Detected
+
+If either condition is not satisfied, no payout is initiated.
+
+2. Disruption Trigger Conditions
+
+A disruption is considered valid when any one of the following parameters crosses predefined thresholds within the worker’s active delivery zone.
+
+2.1 Environmental Triggers
+
+Rainfall exceeds policy threshold (e.g., 45–70 mm/hour depending on plan)
+
+Temperature exceeds safe working limits (e.g., above 40–44°C)
+
+Air Quality Index (AQI) reaches hazardous levels (e.g., above 280–400)
+
+2.2 Road & Civic Disruption Triggers
+
+Road closures due to construction or accidents
+
+Traffic congestion beyond critical threshold
+
+Political protests, strikes, or rallies
+
+Government-imposed curfews or restricted movement zones
+
+2.3 Platform Disruption Triggers
+
+Delivery app/server downtime beyond defined duration (e.g., 15–45 minutes)
+
+Dark store or warehouse shutdown
+
+Order allocation failure or system glitches
+
+2.4 Demand-Based Trigger
+
+Order demand drops below a minimum threshold
+(e.g., less than 1 order per hour for a continuous time window)
+
+3. Income Loss Validation Conditions
+
+Once a disruption is detected, the system evaluates its financial impact.
+
+3.1 Expected vs Actual Performance
+
+The platform calculates:
+
+Expected Deliveries (based on historical data for that time, day, and zone)
+
+Actual Deliveries during the disruption period
+
+3.2 Minimum Loss Threshold
+
+A payout is triggered only if:
+
+Income Drop ≥ 30%
+
+Formula:
+
+Income Drop % = (Expected Deliveries − Actual Deliveries) / Expected Deliveries
+
+
+If the drop is below this threshold, the event is considered non-impactful, and no payout is issued.
+
+4. Activity Validation Conditions
+
+To prevent misuse, the worker must meet the following:
+
+Must be active on the platform before the disruption
+
+Must be logged in and available for orders
+
+Must not have manually gone offline during the disruption window
+
+5. Location Validation Conditions
+
+Worker must be physically present in the affected zone
+
+GPS data must match the disruption area
+
+No GPS spoofing or abnormal movement patterns
+
+6. Time Correlation Condition
+
+The income drop must occur during the disruption window
+
+Delayed or unrelated drops are not considered valid
+
+7. Policy-Specific Trigger Sensitivity
+
+Each policy tier has different sensitivity levels:
+
+Basic Plan → Triggers only in extreme conditions (lower frequency)
+
+Moderate Plan → Triggers in moderate disruptions
+
+Premium Plan → Triggers even in mild disruptions (higher sensitivity)
+
+8. Special Trigger Conditions (Advanced)
+8.1 Multi-Disruption Bonus
+
+If 2 or more disruptions occur within a short timeframe
+
+Additional bonus payout is triggered (as per policy)
+
+8.2 Full-Day Disruption Rule (Premium Plan)
+
+If worker is unable to work for ≥ 6 hours due to disruptions
+
+Fixed payout is automatically triggered
+
+9. Final Trigger Logic (Simplified)
+
+A payout is executed only when:
+
+(Disruption Detected)
+AND
+(Income Drop ≥ 30%)
+AND
+(User Active + Location Verified + Time Matched)
+
+10. Key Advantage of This Model
+
+No manual claim filing
+
+Instant and transparent decision-making
+
+Minimal fraud risk
+
+Fast payouts (near real-time)
 
 *End of Document*
