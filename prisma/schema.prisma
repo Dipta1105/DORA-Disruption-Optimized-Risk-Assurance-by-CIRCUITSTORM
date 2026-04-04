@@ -1,0 +1,87 @@
+generator client {
+  provider = "prisma-client-js"
+}
+
+datasource db {
+  provider = "sqlite"
+  url      = "file:./dev.db"
+}
+
+model User {
+  id             String        @id @default(uuid())
+  phone          String        @unique
+  name           String
+  platform       String        // Zepto, Blinkit, Instamart
+  upiId          String
+  geoCluster     String        @default("Mumbai_Andheri")
+  walletBalance  Float         @default(0)
+  createdAt      DateTime      @default(now())
+  
+  policies       Policy[]
+  claims         Claim[]
+  orders         Order[]
+  transactions   Transaction[]
+}
+
+model Policy {
+  id                String   @id @default(uuid())
+  userId            String
+  planType          String   // Basic, Standard, Pro
+  weeklyPremiumCap  Float
+  coveragePercentage Float
+  dailyPayoutCap    Float
+  weeklyPayoutLimit Float
+  status            String   @default("active")
+  premiumDeductedThisWeek Float @default(0)
+  createdAt         DateTime @default(now())
+
+  user              User     @relation(fields: [userId], references: [id])
+}
+
+model Order {
+  id            String   @id @default(uuid())
+  userId        String
+  orderId       String   @unique
+  earnings      Float
+  premiumCharged Float   @default(0)
+  completedAt   DateTime @default(now())
+
+  user          User     @relation(fields: [userId], references: [id])
+}
+
+model Claim {
+  id                String   @id @default(uuid())
+  userId            String
+  eventId           String
+  eventType         String
+  lossAmount        Float
+  payoutAmount      Float
+  status            String   @default("pending") // auto_approved, pending_review, rejected
+  rejectionReason   String?
+  createdAt         DateTime @default(now())
+
+  user              User     @relation(fields: [userId], references: [id])
+
+  @@unique([userId, eventId]) // Duplicate Claim Prevention
+}
+
+model Transaction {
+  id            String   @id @default(uuid())
+  userId        String
+  type          String   // payout, deduction, withdrawal
+  amount        Float
+  title         String
+  status        String   @default("completed")
+  createdAt     DateTime @default(now())
+
+  user          User     @relation(fields: [userId], references: [id])
+}
+
+model Event {
+  id        String   @id @default(uuid())
+  type      String   // rain, heatwave, outage
+  location  String
+  severity  Float
+  status    String   @default("active") // active, resolved
+  createdAt DateTime @default(now())
+}
