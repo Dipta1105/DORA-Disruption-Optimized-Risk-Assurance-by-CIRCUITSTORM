@@ -1,0 +1,54 @@
+[
+  {
+    "id": "CLM-001",
+    "predictedEarnings": 5000,
+    "actualEarnings": 1200,
+    "coveragePercent": 95,
+    "dailyCapRemaining": 8000,
+    "weeklyLimitRemaining": 25000,
+    "finalClaimAmount": 3610,
+    "status": "Approved",
+    "eventType": "Network Outage",
+    "claimDate": "2026-04-01",
+    "zone": "South-East Asia (SEA-1)"
+  },
+  {
+    "id": "CLM-002",
+    "predictedEarnings": 12500,
+    "actualEarnings": 0,
+    "coveragePercent": 92,
+    "dailyCapRemaining": 12000,
+    "weeklyLimitRemaining": 45000,
+    "finalClaimAmount": 11500,
+    "status": "Pending",
+    "eventType": "Cyber Incident",
+    "claimDate": "2026-04-02",
+    "zone": "North America (NA-West)"
+  },
+  {
+    "id": "CLM-003",
+    "predictedEarnings": 850,
+    "actualEarnings": 120,
+    "coveragePercent": 100,
+    "dailyCapRemaining": 1500,
+    "weeklyLimitRemaining": 10000,
+    "finalClaimAmount": 730,
+    "status": "Declined",
+    "eventType": "Hardware Failure",
+    "claimDate": "2026-04-03",
+    "zone": "Europe (EU-Central)"
+  },
+  {
+    "id": "CLM-004",
+    "predictedEarnings": 7200,
+    "actualEarnings": 3400,
+    "coveragePercent": 85,
+    "dailyCapRemaining": 5000,
+    "weeklyLimitRemaining": 15000,
+    "finalClaimAmount": 3230,
+    "status": "Approved",
+    "eventType": "Logistics Delay",
+    "claimDate": "2026-04-04",
+    "zone": "LATAM (South-East)"
+  }
+]

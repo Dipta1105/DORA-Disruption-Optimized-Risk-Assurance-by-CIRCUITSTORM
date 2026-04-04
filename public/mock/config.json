@@ -1,0 +1,13 @@
+{
+  "platformName": "INSURANCE (DORA)",
+  "version": "1.0.0-mvp",
+  "features": {
+    "fraudDetection": true,
+    "automaticSettlement": false,
+    "nodeMapping": true,
+    "realTimeMonitoring": true
+  },
+  "regions": ["NA", "EU", "ASIA", "LATAM", "ME"],
+  "currency": "USD",
+  "maintenance": false
+}

@@ -1,0 +1,30 @@
+[
+  {
+    "id": 1,
+    "type": "Disruption Detected",
+    "message": "Major network outage detected in South-East Asia region. Potential impact on 4 active policies.",
+    "severity": "Extreme",
+    "time": "2026-04-04 10:40:12"
+  },
+  {
+    "id": 2,
+    "type": "Payout Flagged",
+    "message": "Claim #CLM-002 flagged for manual review due to anomaly in disruption signal timing.",
+    "severity": "High",
+    "time": "2026-04-04 10:28:45"
+  },
+  {
+    "id": 3,
+    "type": "System Update",
+    "message": "Risk engine v4.2 successfully deployed to production. Latency monitoring active.",
+    "severity": "Info",
+    "time": "2026-04-04 09:42:00"
+  },
+  {
+    "id": 4,
+    "type": "New Message",
+    "message": "Legal team has added a comment to Policy #POL-001 regarding renewal terms.",
+    "severity": "Neutral",
+    "time": "2026-04-04 06:14:22"
+  }
+]

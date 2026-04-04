@@ -1,0 +1,7 @@
+[
+  { "id": "TX-4921", "type": "Payout", "entity": "Acme Corp", "amount": -42000, "status": "Settled", "date": "2026-04-03" },
+  { "id": "TX-4890", "type": "Deposit", "entity": "Capital Reserve", "amount": 150000, "status": "Confirmed", "date": "2026-04-02" },
+  { "id": "TX-4882", "type": "Payout", "entity": "Cyber Shield Co", "amount": -8500, "status": "Settled", "date": "2026-04-02" },
+  { "id": "TX-4850", "type": "Reversal", "entity": "Soylent Corp", "amount": 12000, "status": "Settled", "date": "2026-04-01" },
+  { "id": "TX-4842", "type": "Fee", "entity": "Network Node SEA", "amount": -450, "status": "Confirmed", "date": "2026-04-01" }
+]

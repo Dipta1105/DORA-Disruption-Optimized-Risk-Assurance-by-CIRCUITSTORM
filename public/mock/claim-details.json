@@ -1,0 +1,27 @@
+{
+  "id": "CLM-001",
+  "predictedEarnings": 5000,
+  "actualEarnings": 1200,
+  "coveragePercent": 95,
+  "dailyCapRemaining": 8000,
+  "weeklyLimitRemaining": 25000,
+  "finalClaimAmount": 3610,
+  "status": "Approved",
+  "eventType": "Network Outage",
+  "claimDate": "2026-04-01",
+  "zone": "South-East Asia (SEA-1)",
+  "deductible": 1000,
+  "policyId": "POL-128",
+  "description": "A major disruption to node operations caused 6+ hours of unexpected downtime at the regional logistics terminal.",
+  "investigationLogs": [
+    { "time": "2026-04-01 10:14", "event": "Claim Initialized via DORA Auto-Trigger", "status": "Completed" },
+    { "time": "2026-04-01 10:15", "event": "Downtime Severity Analysis Confirmed (High)", "status": "Optimal" },
+    { "time": "2026-04-01 10:42", "event": "Claim Calculation Finalized - $3,610 Recommended", "status": "Review Required" },
+    { "time": "2026-04-02 09:12", "event": "Manual Audit Passed - No Anomaly Detected", "status": "Optimal" },
+    { "time": "2026-04-02 11:24", "event": "Payout Authorized for Fund Ledger Settlement", "status": "Settled" }
+  ],
+  "nodeSignals": [
+    { "node": "SEA-Hub-12", "latency": "342ms", "status": "Down" },
+    { "node": "SEA-Hub-14", "latency": "112ms", "status": "Degraded" }
+  ]
+}

@@ -1,0 +1,6 @@
+[
+  { "id": "TR-101", "name": "Cyber Outage #914", "type": "Network Latency", "condition": "> 120ms for 1h", "status": "Operational", "lastTrigger": "2026-04-01" },
+  { "id": "TR-102", "name": "Natural Disaster #820", "type": "Seismic Monitor", "condition": "> 4.0 Magnitude", "status": "Optimal", "lastTrigger": "Never" },
+  { "id": "TR-103", "name": "Supplier Failure #742", "type": "Logistics Event", "condition": "Non-delivery confirmation", "status": "In Review", "lastTrigger": "2026-03-24" },
+  { "id": "TR-104", "name": "Cloud Outage AWS", "type": "Region Health", "condition": "Region: us-east-1 status != 'Healthy'", "status": "Operational", "lastTrigger": "2026-03-30" }
+]

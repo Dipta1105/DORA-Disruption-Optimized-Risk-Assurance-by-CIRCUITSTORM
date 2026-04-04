@@ -1,0 +1,6 @@
+[
+  { "id": "FR-941", "vector": "Duplicate Disruption Signal", "claimLink": "CLM-002", "risk": "Extreme", "owner": "M. Chen", "status": "In Progress" },
+  { "id": "FR-932", "vector": "Non-matching Latency Signal", "claimLink": "CLM-005", "risk": "High", "owner": "J. Doe", "status": "Pending" },
+  { "id": "FR-905", "vector": "Historical Actor Overlap", "claimLink": "CLM-003", "risk": "High", "owner": "R. Smith", "status": "In Progress" },
+  { "id": "FR-874", "vector": "Inconsistent Regional Data", "claimLink": "CLM-001", "risk": "Low", "owner": "M. Chen", "status": "Passed" }
+]
