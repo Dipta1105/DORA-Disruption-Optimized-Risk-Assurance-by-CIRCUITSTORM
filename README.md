@@ -857,4 +857,1016 @@ $$
 
 ---
 
+# DORA: Adversarial Defense & Anti-Spoofing Strategy
+
+## Fraud Prevention System - MVP Edition
+
+---
+
+## Document Control
+
+| Version | Date | Status |
+| :--- | :--- | :--- |
+| 1.0 | April 2026 | Final - Hackathon Submission |
+
+---
+
+## Table of Contents
+
+1. [Executive Summary](#1-executive-summary)
+2. [Core Philosophy: Honest Scoping](#2-core-philosophy-honest-scoping)
+3. [MVP Fraud Detection Layers](#3-mvp-fraud-detection-layers)
+4. [Layer 1: Speed Plausibility Check](#4-layer-1-speed-plausibility-check)
+5. [Layer 2: Duplicate Claim Prevention](#5-layer-2-duplicate-claim-prevention)
+6. [Layer 3: Zone-Event Mismatch Detection](#6-layer-3-zone-event-mismatch-detection)
+7. [Layer 4: Activity During Disruption](#7-layer-4-activity-during-disruption)
+8. [Layer 5: Temporal Consistency Check](#8-layer-5-temporal-consistency-check)
+9. [Coordinated Fraud Detection (Statistical)](#9-coordinated-fraud-detection-statistical)
+10. [The 3-State Decision Model](#10-the-3-state-decision-model)
+11. [Fairness Mechanisms for Genuine Users](#11-fairness-mechanisms-for-genuine-users)
+12. [Complete Validation Flow](#12-complete-validation-flow)
+13. [Data Sources & Availability](#13-data-sources--availability)
+14. [Roadmap: Enterprise Features](#14-roadmap-enterprise-features)
+15. [MVP vs Enterprise Comparison](#15-mvp-vs-enterprise-comparison)
+16. [Conclusion](#16-conclusion)
+
+---
+
+## 1. Executive Summary
+
+DORA's fraud prevention system is designed with **honest scoping** for hackathon MVP implementation. Instead of claiming impossible enterprise features, we implement **five deterministic checks** using only GPS coordinates, timestamps, and order data.
+
+> **Core Principle:** "A 3-state decision model (AUTO-APPROVED / PENDING REVIEW / REJECTED) protects genuine users from false positives while catching obvious spoofing attempts."
+
+### What This Document Covers
+
+| Section | Content |
+| :--- | :--- |
+| MVP Implementable | Actual code with logic using available APIs |
+| Demo-Ready | Simulated scenarios for judge presentation |
+| Acknowledged Limitations | What we cannot detect in MVP |
+| Roadmap | Enterprise features for post-hackathon |
+
+---
+
+## 2. Core Philosophy: Honest Scoping
+
+### 2.1 What We Will NOT Claim (Unlike False Solutions)
+
+| False Claim | Why It's False |
+| :--- | :--- |
+| "Hardware-backed attestation in MVP" | Requires Google Play Console, backend setup, not hackathon-feasible |
+| "Accelerometer/gyroscope analysis" | Privacy concerns, battery impact, complex sensor fusion |
+| "Cellular tower handoff detection" | Not accessible via web/mobile APIs without telco partnership |
+| "VPN/tunneling detection" | Unreliable, easily bypassed, over-engineered |
+| "Binary REAL/FAKE decision" | Guarantees false positives, destroys user trust |
+
+### 2.2 What We WILL Implement
+
+| True MVP Feature | Implementation |
+| :--- | :--- |
+| Speed plausibility | Haversine formula + GPS timestamps |
+| Duplicate prevention | Database unique constraints |
+| Zone validation | Geo-fencing with OpenStreetMap |
+| Activity monitoring | Order data queries |
+| Temporal consistency | Timestamp arithmetic |
+| Cluster anomaly | Statistical aggregation |
+
+---
+
+## 3. MVP Fraud Detection Layers
+
+DORA implements **five deterministic validation layers** using only available data sources.
+
+```
+┌─────────────────────────────────────────────────────────────────┐
+│                    FIVE LAYERS OF DEFENSE                        │
+├─────────────────────────────────────────────────────────────────┤
+│                                                                  │
+│   Layer 1: Speed Plausibility                                   │
+│   ├── Detects: GPS spoofing, impossible teleportation           │
+│   └── Method: Haversine distance + timestamp diff               │
+│                                                                  │
+│   Layer 2: Duplicate Claim Prevention                           │
+│   ├── Detects: Multiple claims for same event                   │
+│   └── Method: Database unique constraint (user_id, event_id)    │
+│                                                                  │
+│   Layer 3: Zone-Event Mismatch                                  │
+│   ├── Detects: Claiming disruption from outside affected zone   │
+│   └── Method: Geo-fencing + distance calculation                │
+│                                                                  │
+│   Layer 4: Activity During Disruption                           │
+│   ├── Detects: Claiming loss while actively delivering          │
+│   └── Method: Order data timestamp comparison                   │
+│                                                                  │
+│   Layer 5: Temporal Consistency                                 │
+│   ├── Detects: Claims submitted hours after event ended         │
+│   └── Method: Claim time vs disruption end time                 │
+│                                                                  │
+└─────────────────────────────────────────────────────────────────┘
+```
+
+---
+
+## 4. Layer 1: Speed Plausibility Check
+
+### 4.1 Mathematical Foundation
+
+**Haversine Formula for Distance Calculation:**
+
+$$
+d = 2R \cdot \arcsin\left(\sqrt{\sin^2\left(\frac{\Delta\phi}{2}\right) + \cos(\phi_1) \cdot \cos(\phi_2) \cdot \sin^2\left(\frac{\Delta\lambda}{2}\right)}\right)
+$$
+
+Where:
+- $d$ = Distance between two points (km)
+- $R$ = Earth's radius (6371 km)
+- $\phi_1, \phi_2$ = Latitudes in radians
+- $\Delta\phi = \phi_2 - \phi_1$
+- $\Delta\lambda = \lambda_2 - \lambda_1$ (difference in longitudes)
+
+**Speed Calculation:**
+
+$$
+v = \frac{d}{\Delta t} \times 3600
+$$
+
+Where:
+- $v$ = Speed (km/hr)
+- $d$ = Distance (km)
+- $\Delta t$ = Time difference (seconds)
+
+### 4.2 Decision Rules
+
+| Condition | Outcome | Action |
+| :--- | :--- | :--- |
+| $v \leq 80 \text{ km/hr}$ | ✅ Normal | Pass to next layer |
+| $80 < v \leq 120 \text{ km/hr}$ | ⚠️ Suspicious | Flag for PENDING REVIEW |
+| $v > 120 \text{ km/hr}$ | ❌ Impossible | REJECT immediately |
+
+### 4.3 Implementation
+
+```javascript
+/**
+ * Haversine distance calculation between two GPS coordinates
+ * @param {number} lat1 - Latitude of first point (degrees)
+ * @param {number} lon1 - Longitude of first point (degrees)
+ * @param {number} lat2 - Latitude of second point (degrees)
+ * @param {number} lon2 - Longitude of second point (degrees)
+ * @returns {number} Distance in kilometers
+ */
+function haversineDistance(lat1, lon1, lat2, lon2) {
+    const R = 6371; // Earth's radius in kilometers
+    const toRadians = (degrees) => degrees * Math.PI / 180;
+    
+    const dLat = toRadians(lat2 - lat1);
+    const dLon = toRadians(lon2 - lon1);
+    
+    const a = Math.sin(dLat / 2) * Math.sin(dLat / 2) +
+              Math.cos(toRadians(lat1)) * Math.cos(toRadians(lat2)) *
+              Math.sin(dLon / 2) * Math.sin(dLon / 2);
+    
+    const c = 2 * Math.atan2(Math.sqrt(a), Math.sqrt(1 - a));
+    
+    return R * c;
+}
+
+/**
+ * Validate speed consistency across GPS history
+ * @param {Array} gpsHistory - Array of {lat, lon, timestamp} objects
+ * @returns {Object} Validation result with status and reason
+ */
+function validateSpeed(gpsHistory) {
+    if (gpsHistory.length < 2) {
+        return { valid: true, reason: null, severity: null };
+    }
+    
+    for (let i = 1; i < gpsHistory.length; i++) {
+        const prev = gpsHistory[i - 1];
+        const curr = gpsHistory[i];
+        
+        const distance = haversineDistance(
+            prev.lat, prev.lon,
+            curr.lat, curr.lon
+        );
+        
+        const timeDiffSeconds = (curr.timestamp - prev.timestamp) / 1000;
+        
+        if (timeDiffSeconds <= 0) continue;
+        
+        const speedKmph = (distance / timeDiffSeconds) * 3600;
+        
+        if (speedKmph > 120) {
+            return {
+                valid: false,
+                reason: `Impossible speed: ${speedKmph.toFixed(1)} km/hr (max 120)`,
+                severity: 'reject'
+            };
+        }
+        
+        if (speedKmph > 80) {
+            return {
+                valid: false,
+                reason: `Suspicious speed: ${speedKmph.toFixed(1)} km/hr requires review`,
+                severity: 'pending_review'
+            };
+        }
+    }
+    
+    return { valid: true, reason: null, severity: null };
+}
+```
+
+### 4.4 Why This Works
+
+| Spoofing Method | Detection |
+| :--- | :--- |
+| GPS spoofing app teleporting user | Distance jump creates speed >120 km/hr |
+| Mock location with random coordinates | Inconsistent movement patterns |
+| Static GPS signal (not moving) | Speed = 0 km/hr - passes check (user may be legitimately stationary) |
+
+### 4.5 Limitation Acknowledged
+
+> **Note:** Sophisticated spoofing that gradually moves GPS coordinates at realistic speeds ($\leq 80$ km/hr) will NOT be detected by this layer alone. This requires Layer 2-5 or enterprise features.
+
+---
+
+## 5. Layer 2: Duplicate Claim Prevention
+
+### 5.1 Mathematical Foundation
+
+**Uniqueness Constraint:**
+
+$$
+\nexists \text{ claim } c \in C : c.\text{user\_id} = u \land c.\text{event\_id} = e
+$$
+
+Where:
+- $C$ = Set of all claims
+- $u$ = Current user ID
+- $e$ = Current event ID
+
+### 5.2 Implementation
+
+```sql
+-- Database schema with unique constraint
+CREATE TABLE claims (
+    claim_id UUID PRIMARY KEY DEFAULT gen_random_uuid(),
+    user_id VARCHAR(50) NOT NULL,
+    event_id VARCHAR(50) NOT NULL,
+    event_type VARCHAR(50) NOT NULL,
+    payout_amount DECIMAL(10, 2),
+    status VARCHAR(20) DEFAULT 'pending',
+    created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
+    
+    -- This prevents duplicate claims for same user + event
+    CONSTRAINT unique_user_event UNIQUE (user_id, event_id)
+);
+
+-- Index for fast lookup
+CREATE INDEX idx_claims_user_event ON claims (user_id, event_id);
+```
+
+```javascript
+/**
+ * Prevent duplicate claims for the same user and event
+ * @param {string} userId - User identifier
+ * @param {string} eventId - Disruption event identifier
+ * @returns {Object} Validation result
+ */
+async function preventDuplicateClaim(userId, eventId) {
+    const result = await db.query(
+        `SELECT claim_id, status, created_at 
+         FROM claims 
+         WHERE user_id = $1 AND event_id = $2`,
+        [userId, eventId]
+    );
+    
+    if (result.rows.length > 0) {
+        const existing = result.rows[0];
+        return {
+            valid: false,
+            reason: `Duplicate claim - already submitted on ${existing.created_at}`,
+            severity: 'reject',
+            existingClaimId: existing.claim_id
+        };
+    }
+    
+    return { valid: true, reason: null, severity: null };
+}
+```
+
+### 5.3 Additional Temporal Cooldown
+
+```javascript
+/**
+ * Prevent claims within 2 hours of previous payout
+ * @param {string} userId - User identifier
+ * @returns {Object} Validation result
+ */
+async function checkTemporalCooldown(userId) {
+    const result = await db.query(
+        `SELECT payout_amount, created_at 
+         FROM claims 
+         WHERE user_id = $1 
+         AND status = 'auto_approved'
+         AND created_at > NOW() - INTERVAL '2 hours'
+         ORDER BY created_at DESC 
+         LIMIT 1`,
+        [userId]
+    );
+    
+    if (result.rows.length > 0) {
+        const lastClaim = result.rows[0];
+        return {
+            valid: false,
+            reason: `Temporal cooldown - last payout at ${lastClaim.created_at}`,
+            severity: 'pending_review'
+        };
+    }
+    
+    return { valid: true, reason: null, severity: null };
+}
+```
+
+---
+
+## 6. Layer 3: Zone-Event Mismatch Detection
+
+### 6.1 Mathematical Foundation
+
+**Distance from User to Disruption Zone Center:**
+
+$$
+d_{\text{zone}} = 2R \cdot \arcsin\left(\sqrt{\sin^2\left(\frac{\phi_u - \phi_z}{2}\right) + \cos(\phi_u) \cos(\phi_z) \sin^2\left(\frac{\lambda_u - \lambda_z}{2}\right)}\right)
+$$
+
+**Decision Rule:**
+
+$$
+\text{Status} = 
+\begin{cases}
+\text{APPROVED} & \text{if } d_{\text{zone}} \leq r_{\text{zone}} \\
+\text{REJECTED} & \text{if } d_{\text{zone}} > r_{\text{zone}}
+\end{cases}
+$$
+
+Where:
+- $d_{\text{zone}}$ = Distance from user to zone center
+- $r_{\text{zone}}$ = Zone radius (typically 5-10 km)
+- $\phi_u, \lambda_u$ = User GPS coordinates
+- $\phi_z, \lambda_z$ = Zone center coordinates
+
+### 6.2 Implementation
+
+```javascript
+/**
+ * Validate that user is within the disruption zone
+ * @param {number} userLat - User's latitude
+ * @param {number} userLon - User's longitude
+ * @param {Object} disruptionZone - { center_lat, center_lon, radius_km }
+ * @returns {Object} Validation result
+ */
+function validateUserInDisruptionZone(userLat, userLon, disruptionZone) {
+    const distance = haversineDistance(
+        userLat, userLon,
+        disruptionZone.center_lat,
+        disruptionZone.center_lon
+    );
+    
+    if (distance > disruptionZone.radius_km) {
+        return {
+            valid: false,
+            reason: `User ${distance.toFixed(1)} km away from disruption zone (radius: ${disruptionZone.radius_km} km)`,
+            severity: 'reject'
+        };
+    }
+    
+    return {
+        valid: true,
+        reason: null,
+        severity: null,
+        distanceFromZone: distance
+    };
+}
+```
+
+### 6.3 Geo-Cluster Definition
+
+```javascript
+// Pre-defined geo-clusters for each city
+const geoClusters = {
+    'Mumbai_Andheri': {
+        center_lat: 19.1136,
+        center_lon: 72.8697,
+        radius_km: 5,
+        risk_level: 'high'
+    },
+    'Mumbai_Bandra': {
+        center_lat: 19.0596,
+        center_lon: 72.8295,
+        radius_km: 4,
+        risk_level: 'medium'
+    },
+    'Bangalore_Indiranagar': {
+        center_lat: 12.9784,
+        center_lon: 77.6408,
+        radius_km: 5,
+        risk_level: 'medium'
+    },
+    'Chennai_TNagar': {
+        center_lat: 13.0475,
+        center_lon: 80.2341,
+        radius_km: 4,
+        risk_level: 'high'  // Flood-prone
+    }
+};
+```
+
+---
+
+## 7. Layer 4: Activity During Disruption
+
+### 7.1 Mathematical Foundation
+
+**Activity Flag:**
+
+$$
+\text{Active} = \mathbb{1}\left[\sum_{i=1}^{n} \text{order}_i \cdot \mathbb{1}\left[t_{\text{start}} \leq t_i \leq t_{\text{end}}\right] > 0\right]
+$$
+
+**Decision Rule:**
+
+$$
+\text{Status} = 
+\begin{cases}
+\text{REJECTED} & \text{if Active} = \text{TRUE} \\
+\text{Continue} & \text{if Active} = \text{FALSE}
+\end{cases}
+$$
+
+Where:
+- $t_{\text{start}}$ = Disruption start time
+- $t_{\text{end}}$ = Disruption end time
+- $t_i$ = Order completion time
+
+### 7.2 Implementation
+
+```javascript
+/**
+ * Check if user completed any orders during the disruption window
+ * @param {string} userId - User identifier
+ * @param {Date} disruptionStart - Start time of disruption
+ * @param {Date} disruptionEnd - End time of disruption
+ * @returns {Object} Validation result
+ */
+async function validateActivityDuringDisruption(userId, disruptionStart, disruptionEnd) {
+    const result = await db.query(
+        `SELECT 
+            COUNT(*) as order_count,
+            SUM(earnings) as total_earnings,
+            array_agg(order_id) as order_ids
+         FROM orders
+         WHERE user_id = $1
+         AND completed_at BETWEEN $2 AND $3`,
+        [userId, disruptionStart, disruptionEnd]
+    );
+    
+    const orderCount = parseInt(result.rows[0].order_count);
+    
+    if (orderCount > 0) {
+        return {
+            valid: false,
+            reason: `User completed ${orderCount} order(s) during disruption window`,
+            severity: 'reject',
+            details: {
+                order_count: orderCount,
+                total_earnings: result.rows[0].total_earnings,
+                order_ids: result.rows[0].order_ids
+            }
+        };
+    }
+    
+    return {
+        valid: true,
+        reason: null,
+        severity: null,
+        details: { order_count: 0 }
+    };
+}
+```
+
+### 7.3 Why This Is Critical
+
+| Scenario | Detection |
+| :--- | :--- |
+| User claims ₹225 loss but completed 5 orders during rain | REJECTED - contradictory evidence |
+| User claims loss, went home during rain | APPROVED - no activity |
+| User claims loss, GPS shows movement but no orders | PENDING REVIEW - possible platform issue |
+
+---
+
+## 8. Layer 5: Temporal Consistency Check
+
+### 8.1 Mathematical Foundation
+
+**Time Elapsed Since Disruption End:**
+
+$$
+\Delta t_{\text{elapsed}} = t_{\text{claim}} - t_{\text{end}}
+$$
+
+**Decision Rule:**
+
+$$
+\text{Status} = 
+\begin{cases}
+\text{AUTO-APPROVED} & \text{if } \Delta t_{\text{elapsed}} \leq 2 \text{ hours} \\
+\text{PENDING REVIEW} & \text{if } 2 < \Delta t_{\text{elapsed}} \leq 24 \text{ hours} \\
+\text{REJECTED} & \text{if } \Delta t_{\text{elapsed}} > 24 \text{ hours}
+\end{cases}
+$$
+
+### 8.2 Implementation
+
+```javascript
+/**
+ * Validate claim timing relative to disruption end
+ * @param {Date} disruptionEnd - End time of disruption event
+ * @param {Date} claimTime - Time claim was initiated
+ * @returns {Object} Validation result
+ */
+function validateClaimTiming(disruptionEnd, claimTime) {
+    const hoursElapsed = (claimTime - disruptionEnd) / (1000 * 60 * 60);
+    
+    if (hoursElapsed <= 2) {
+        return {
+            valid: true,
+            reason: null,
+            severity: null,
+            hoursElapsed: hoursElapsed
+        };
+    }
+    
+    if (hoursElapsed <= 24) {
+        return {
+            valid: false,
+            reason: `Claim submitted ${hoursElapsed.toFixed(1)} hours after disruption ended`,
+            severity: 'pending_review',
+            hoursElapsed: hoursElapsed
+        };
+    }
+    
+    return {
+        valid: false,
+        reason: `Claim submitted ${hoursElapsed.toFixed(1)} hours after disruption ended (max 24)`,
+        severity: 'reject',
+        hoursElapsed: hoursElapsed
+    };
+}
+```
+
+---
+
+## 9. Coordinated Fraud Detection (Statistical)
+
+### 9.1 Mathematical Foundation
+
+**Claim Density for Geo-Cluster $c$:**
+
+$$
+\rho_c = \frac{|C_c|}{|U_c|}
+$$
+
+Where:
+- $\rho_c$ = Claim density in cluster $c$
+- $|C_c|$ = Number of claims in cluster $c$
+- $|U_c|$ = Number of active users in cluster $c$
+
+**Anomaly Score:**
+
+$$
+\alpha_c = \frac{\rho_c}{\rho_{\text{historical}}}
+$$
+
+**Decision Rules:**
+
+| Condition | Interpretation | Action |
+| :--- | :--- | :--- |
+| $\alpha_c \leq 2$ | Normal fluctuation | No action |
+| $2 < \alpha_c \leq 3$ | Elevated activity | Monitor |
+| $\alpha_c > 3$ | Significant anomaly | Investigate |
+
+### 9.2 Implementation
+
+```javascript
+/**
+ * Detect coordinated fraud rings using cluster-level statistics
+ * @param {string} geoClusterId - Geo-cluster identifier
+ * @param {string} eventId - Disruption event identifier
+ * @returns {Object} Anomaly detection result
+ */
+async function detectClusterAnomaly(geoClusterId, eventId) {
+    // Get historical baseline (last 30 days average claim rate)
+    const historicalResult = await db.query(
+        `SELECT 
+            AVG(daily_claim_rate) as avg_rate,
+            STDDEV(daily_claim_rate) as stddev_rate
+         FROM (
+             SELECT 
+                DATE(created_at) as day,
+                COUNT(*)::float / COUNT(DISTINCT user_id) as daily_claim_rate
+             FROM claims
+             WHERE geo_cluster = $1
+             AND created_at > NOW() - INTERVAL '30 days'
+             GROUP BY DATE(created_at)
+         ) daily_stats`,
+        [geoClusterId]
+    );
+    
+    const historicalRate = parseFloat(historicalResult.rows[0].avg_rate);
+    const stddev = parseFloat(historicalResult.rows[0].stddev_rate);
+    
+    // Get current claim rate for this event
+    const currentResult = await db.query(
+        `SELECT 
+            COUNT(*) as claim_count,
+            COUNT(DISTINCT user_id) as active_users
+         FROM claims c
+         JOIN users u ON c.user_id = u.user_id
+         WHERE c.event_id = $1
+         AND u.geo_cluster = $2`,
+        [eventId, geoClusterId]
+    );
+    
+    const currentRate = currentResult.rows[0].claim_count / 
+                        Math.max(1, currentResult.rows[0].active_users);
+    
+    const anomalyScore = currentRate / Math.max(0.01, historicalRate);
+    
+    if (anomalyScore > 3) {
+        return {
+            isAnomaly: true,
+            severity: 'high',
+            anomalyScore: anomalyScore,
+            currentRate: currentRate,
+            historicalRate: historicalRate,
+            recommendation: 'Hold all payouts in this cluster for manual review'
+        };
+    }
+    
+    if (anomalyScore > 2) {
+        return {
+            isAnomaly: true,
+            severity: 'medium',
+            anomalyScore: anomalyScore,
+            currentRate: currentRate,
+            historicalRate: historicalRate,
+            recommendation: 'Flag for monitoring'
+        };
+    }
+    
+    return {
+        isAnomaly: false,
+        severity: null,
+        anomalyScore: anomalyScore,
+        recommendation: 'Normal activity'
+    };
+}
+```
+
+### 9.3 Demo Simulation
+
+For hackathon demo, pre-script a cluster anomaly scenario:
+
+```javascript
+// Demo: Simulate fraud ring detection
+function simulateFraudRingDetection() {
+    const fraudRingScenario = {
+        geo_cluster: "Mumbai_Andheri",
+        normal_claim_rate: 0.18,  // 18% historical
+        current_claim_rate: 0.67,  // 67% during event
+        anomaly_score: 3.72,
+        flagged_users: 47,
+        recommendation: "HOLD PAYOUTS - Manual verification required"
+    };
+    
+    // Display in admin dashboard
+    console.log(`
+    🚨 FRAUD RING DETECTED
+    Cluster: ${fraudRingScenario.geo_cluster}
+    Normal rate: ${fraudRingScenario.normal_claim_rate * 100}%
+    Current rate: ${fraudRingScenario.current_claim_rate * 100}%
+    Anomaly score: ${fraudRingScenario.anomaly_score}x
+    ${fraudRingScenario.recommendation}
+    `);
+}
+```
+
+---
+
+## 10. The 3-State Decision Model
+
+### 10.1 Why Not Binary REAL/FAKE
+
+| Problem with Binary | Consequence |
+| :--- | :--- |
+| False positives | Genuine users lose payouts, churn, negative word-of-mouth |
+| No gray area | Borderline cases (GPS drift, poor network) cause incorrect decisions |
+| No user recourse | Rejected users have no path to appeal |
+
+### 10.2 The 3-State Model
+
+```
+┌─────────────────────────────────────────────────────────────────┐
+│                    3-STATE DECISION MODEL                        │
+├─────────────────────────────────────────────────────────────────┤
+│                                                                  │
+│   STATE 1: AUTO-APPROVED (95% of claims)                        │
+│   ├── All 5 validation layers pass                              │
+│   ├── Instant payout to wallet                                  │
+│   └── User notified with "✅ Claim Approved"                    │
+│                                                                  │
+│   STATE 2: PENDING REVIEW (4% of claims)                        │
+│   ├── Borderline: speed 80-120 km/hr, or late claim             │
+│   ├── Payout held temporarily                                   │
+│   ├── Manual review within 2 hours                              │
+│   ├── User notified with "⏳ Claim Under Review"                │
+│   └── User can upload evidence (screenshot, route map)          │
+│                                                                  │
+│   STATE 3: REJECTED (1% of claims)                              │
+│   ├── Clear violation: speed >120 km/hr, duplicate, out of zone │
+│   ├── No payout                                                  │
+│   ├── User notified with "❌ Claim Rejected" + reason           │
+│   └── User can appeal via in-app form                           │
+│                                                                  │
+└─────────────────────────────────────────────────────────────────┘
+```
+
+### 10.3 Decision Matrix
+
+| Layer 1 (Speed) | Layer 2 (Duplicate) | Layer 3 (Zone) | Layer 4 (Activity) | Layer 5 (Timing) | Final Decision |
+| :--- | :--- | :--- | :--- | :--- | :--- |
+| PASS | PASS | PASS | PASS | PASS | **AUTO-APPROVED** |
+| SUSPECT | PASS | PASS | PASS | PASS | **PENDING REVIEW** |
+| FAIL | - | - | - | - | **REJECTED** |
+| - | FAIL | - | - | - | **REJECTED** |
+| - | - | FAIL | - | - | **REJECTED** |
+| - | - | - | FAIL | - | **REJECTED** |
+| PASS | PASS | PASS | PASS | SUSPECT | **PENDING REVIEW** |
+| PASS | PASS | PASS | PASS | FAIL | **REJECTED** |
+
+### 10.4 Implementation
+
+```javascript
+/**
+ * Complete claim validation orchestrator
+ * @param {string} userId - User identifier
+ * @param {string} eventId - Disruption event identifier
+ * @returns {Object} Final decision with status and details
+ */
+async function validateClaim(userId, eventId) {
+    // Fetch required data
+    const user = await getUser(userId);
+    const disruptionEvent = await getDisruptionEvent(eventId);
+    const gpsHistory = await getUserGpsHistory(userId, disruptionEvent.start_time);
+    
+    // Layer 1: Speed plausibility
+    const speedCheck = validateSpeed(gpsHistory);
+    if (speedCheck.valid === false && speedCheck.severity === 'reject') {
+        return recordClaimDecision(userId, eventId, 'REJECTED', speedCheck.reason);
+    }
+    
+    // Layer 2: Duplicate prevention
+    const duplicateCheck = await preventDuplicateClaim(userId, eventId);
+    if (duplicateCheck.valid === false && duplicateCheck.severity === 'reject') {
+        return recordClaimDecision(userId, eventId, 'REJECTED', duplicateCheck.reason);
+    }
+    
+    // Layer 3: Zone validation
+    const latestGps = gpsHistory[gpsHistory.length - 1];
+    const zoneCheck = validateUserInDisruptionZone(
+        latestGps.lat, latestGps.lon,
+        disruptionEvent.zone
+    );
+    if (zoneCheck.valid === false) {
+        return recordClaimDecision(userId, eventId, 'REJECTED', zoneCheck.reason);
+    }
+    
+    // Layer 4: Activity during disruption
+    const activityCheck = await validateActivityDuringDisruption(
+        userId,
+        disruptionEvent.start_time,
+        disruptionEvent.end_time
+    );
+    if (activityCheck.valid === false) {
+        return recordClaimDecision(userId, eventId, 'REJECTED', activityCheck.reason);
+    }
+    
+    // Layer 5: Temporal consistency
+    const timingCheck = validateClaimTiming(
+        disruptionEvent.end_time,
+        new Date()
+    );
+    
+    // Handle borderline cases
+    if (speedCheck.valid === false && speedCheck.severity === 'pending_review') {
+        return recordClaimDecision(userId, eventId, 'PENDING_REVIEW', speedCheck.reason);
+    }
+    
+    if (timingCheck.valid === false && timingCheck.severity === 'pending_review') {
+        return recordClaimDecision(userId, eventId, 'PENDING_REVIEW', timingCheck.reason);
+    }
+    
+    if (timingCheck.valid === false && timingCheck.severity === 'reject') {
+        return recordClaimDecision(userId, eventId, 'REJECTED', timingCheck.reason);
+    }
+    
+    // All checks passed
+    return recordClaimDecision(userId, eventId, 'AUTO_APPROVED', 'All validation checks passed');
+}
+
+/**
+ * Record claim decision in database
+ */
+async function recordClaimDecision(userId, eventId, status, reason) {
+    const result = await db.query(
+        `INSERT INTO claims (user_id, event_id, status, rejection_reason, created_at)
+         VALUES ($1, $2, $3, $4, NOW())
+         RETURNING claim_id`,
+        [userId, eventId, status, reason]
+    );
+    
+    return {
+        claim_id: result.rows[0].claim_id,
+        status: status,
+        reason: reason,
+        timestamp: new Date().toISOString()
+    };
+}
+```
+
+---
+
+## 11. Fairness Mechanisms for Genuine Users
+
+### 11.1 Protection Against False Positives
+
+| Scenario | Handling |
+| :--- | :--- |
+| **GPS drift** (temporary signal loss) | 5-minute grace period; system waits for signal stabilization before rejecting |
+| **Poor network connectivity** | Claim logged with timestamp; validated when connectivity returns |
+| **Borderline speed** (80-120 km/hr) | PENDING REVIEW, not rejected. User notified and can provide evidence |
+| **Late claim submission** (2-24 hours) | PENDING REVIEW with explanation, not auto-rejected |
+| **False positive rejection** | In-app appeal form; manual review within 4 hours |
+
+### 11.2 Grace Period Implementation
+
+```javascript
+/**
+ * Allow grace period for GPS stabilization
+ * @param {string} userId - User identifier
+ * @param {Date} disruptionStart - Disruption start time
+ * @returns {Object} Grace period status
+ */
+async function handleGpsDrift(userId, disruptionStart) {
+    // Wait up to 5 minutes for GPS to stabilize
+    const maxWaitMs = 5 * 60 * 1000;
+    const startWait = Date.now();
+    
+    while (Date.now() - startWait < maxWaitMs) {
+        const latestGps = await getLatestGps(userId);
+        
+        if (isGpsStable(latestGps)) {
+            return {
+                stabilized: true,
+                waitTimeMs: Date.now() - startWait,
+                gps: latestGps
+            };
+        }
+        
+        await sleep(1000); // Wait 1 second between checks
+    }
+    
+    return {
+        stabilized: false,
+        waitTimeMs: maxWaitMs,
+        reason: "GPS signal did not stabilize within grace period"
+    };
+}
+
+function isGpsStable(gpsReading) {
+    // Check if accuracy is reasonable (< 100 meters)
+    const ACCEPTABLE_ACCURACY_METERS = 100;
+    return gpsReading.accuracy_meters <= ACCEPTABLE_ACCURACY_METERS;
+}
+```
+
+### 11.3 User Communication Templates
+
+**AUTO-APPROVED Notification:**
+
+```json
+{
+    "title": "✅ Claim Approved - ₹90 Credited",
+    "body": "Heavy rain detected in your area. ₹90 has been added to your DORA wallet.",
+    "data": {
+        "payout_amount": 90,
+        "event_type": "heavy_rainfall",
+        "wallet_balance": 450
+    }
+}
+```
+
+**PENDING REVIEW Notification:**
+
+```json
+{
+    "title": "⏳ Claim Under Review (2 hours max)",
+    "body": "Your claim needs additional verification. You can upload a screenshot or route map to speed up review.",
+    "data": {
+        "review_id": "REV_001",
+        "estimated_resolution_minutes": 120,
+        "appeal_url": "https://dora.app/claims/REV_001"
+    }
+}
+```
+
+**REJECTED Notification:**
+
+```json
+{
+    "title": "❌ Claim Rejected",
+    "body": "Reason: Impossible speed detected (145 km/hr). Delivery bikes cannot travel this fast.",
+    "data": {
+        "rejection_reason": "speed_violation",
+        "appeal_available": true,
+        "appeal_url": "https://dora.app/claims/REJ_001/appeal"
+    }
+}
+```
+
+---
+
+## 12. Complete Validation Flow
+
+### 12.1 Flowchart
+
+```
+                              ┌─────────────────┐
+                              │  CLAIM TRIGGER   │
+                              │  (Weather Event) │
+                              └────────┬────────┘
+                                       │
+                                       ▼
+                    ┌──────────────────────────────────────┐
+                    │         FETCH USER DATA              │
+                    │  - GPS history (last 10 pings)       │
+                    │  - Orders during disruption          │
+                    │  - Previous claims                   │
+                    └──────────────────┬───────────────────┘
+                                       │
+                                       ▼
+                    ┌──────────────────────────────────────┐
+                    │         LAYER 1: SPEED CHECK         │
+                    │  v = distance / time × 3600          │
+                    └──────────────────┬───────────────────┘
+                                       │
+              ┌────────────────────────┼────────────────────────┐
+              │                        │                        │
+              ▼                        ▼                        ▼
+         v ≤ 80 km/hr            80 < v ≤ 120 km/hr         v > 120 km/hr
+              │                        │                        │
+              ▼                        ▼                        ▼
+        ┌──────────┐            ┌──────────┐            ┌──────────┐
+        │ CONTINUE │            │ PENDING  │            │ REJECTED │
+        └────┬─────┘            │ REVIEW   │            └──────────┘
+             │                  └──────────┘
+             ▼
+    ┌──────────────────────────────────────┐
+    │    LAYER 2: DUPLICATE PREVENTION     │
+    │    UNIQUE(user_id, event_id)         │
+    └──────────────────┬───────────────────┘
+                       │
+              ┌────────┴────────┐
+              │                 │
+              ▼                 ▼
+         No Duplicate       Duplicate
+              │                 │
+              ▼                 ▼
+        ┌──────────┐      ┌──────────┐
+        │ CONTINUE │      │ REJECTED │
+        └────┬─────┘      └──────────┘
+             │
+             ▼
+    ┌──────────────────────────────────────┐
+    │      LAYER 3: ZONE VALIDATION        │
+    │      d_zone ≤ radius?                │
+    └──────────────────┬───────────────────┘
+                       │
+              ┌────────┴────────┐
+              │                 │
+              ▼                 ▼
+           In Zone
+
 *End of Document*
